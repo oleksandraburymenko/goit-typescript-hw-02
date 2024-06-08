@@ -1,4 +1,4 @@
-import css from "./LoadMoreBtn/LoadMoreBtn.module.css";
+import css from "./LoadMoreBtn.module.css";
 import React, { FC } from 'react';
 interface LoadMoreBtnProps {
     onClick: () => void;
