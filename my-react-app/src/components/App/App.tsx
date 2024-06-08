@@ -1,32 +1,12 @@
 import { useEffect, useState } from "react";
 import { fetchImages } from "./../../images-api";
 import { ImgProps, Response } from "../../types";
-import ImageGallery from "./ImageGallery/ImageGallery.jsx";
-import SearchBar from "./SearchBar/SearchBar.jsx";
-import LoadMoreBtn from "./LoadMoreBtn/LoadMoreBtn.jsx";
-import ErrorMessage from "./ErrorMessage/ErrorMessage.jsx";
-import Loader from "./Loader/Loader.jsx";
-import ImageModal from "./ImageModal/ImageModal.jsx";
-
-const customStyles = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgb(28, 28, 28, 0.8)",
-  },
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)",
-    background: "",
-  },
-};
+import ImageGallery from "../ImageGallery/ImageGallery";
+import SearchBar from "../SearchBar/SearchBar";
+import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
+import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import Loader from "../Loader/Loader";
+import ImageModal from "../ImageModal/ImageModal";
 
 
 export default function App() {
@@ -36,11 +16,10 @@ export default function App() {
 
   const [page, setPage] = useState<number>(1);
   const [query, setQuery] = useState<string>("");
-  const [total, setTotal] = useState<number>(0);
 
-  const [modalIsOpen, setIsOpen] = useState<boolean>(false);
+  const [openModal, setOpenModal] = useState<boolean>(false);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
-
+  const modImg = images.find((img) => img.id === selectedImage)?.urls.regular;
   const handleSearch = async (newQuery: string) => {
     setQuery(newQuery);
     setPage(1);
@@ -53,7 +32,6 @@ export default function App() {
 
   useEffect(() => {
     if (query === "") {
-      setTotal(0);
       return;
     }
 
@@ -61,8 +39,8 @@ export default function App() {
       try {
         setError(false);
         setIsLoading(true);
-        const {result, total}: Response = await fetchImages(query, page);
-        setTotal(total);
+        const {result}: Response = await fetchImages(query, page);
+      
         setImages((prevImages) => {
           return [...prevImages, ...result];
         });
@@ -75,8 +53,8 @@ export default function App() {
     getImages();
   }, [query, page]);
 
-  const openModal = (): void => {
-    setIsOpen(true);
+  const handleOpenModal = (): void => {
+    setOpenModal(true);
   }
 
   const handleImageId = (id: number): void => {
@@ -84,7 +62,7 @@ export default function App() {
   }; 
 
   const closeModal = (): void => {
-    setIsOpen(false);
+    setOpenModal(false);
     setSelectedImage(null);
   }
 
@@ -93,7 +71,7 @@ export default function App() {
       <SearchBar onSearch={handleSearch} />
       {error && <ErrorMessage />}
 
-      {images.length > 0 && <ImageGallery items={images} onOpen={openModal} onId={handleImageId} />}
+      {images.length > 0 && <ImageGallery data={images} onClick={handleOpenModal} onId={handleImageId} />}
 
       {isLoading && <Loader />}
 
@@ -101,11 +79,9 @@ export default function App() {
         <LoadMoreBtn onClick={handleLoadMore} />
       )}
       <ImageModal
-        imageUrl={selectedImage}
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Example Modal"
+        id={modImg}
+        openModal={openModal}
+        CloseModal={closeModal}
       />
     </>
   );
